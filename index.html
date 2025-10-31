@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    button { margin: 2px; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <table id="usersTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const API_URL = 'http://localhost:5000/api/users';
+
+    async function fetchUsers() {
+      const res = await fetch(API_URL);
+      const users = await res.json();
+      const tbody = document.querySelector('#usersTable tbody');
+      tbody.innerHTML = '';
+      users.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input value="${user.name}" onchange="updateUser('${user._id}', 'name', this.value)"></td>
+          <td><input value="${user.email}" onchange="updateUser('${user._id}', 'email', this.value)"></td>
+          <td><input value="${user.role}" onchange="updateUser('${user._id}', 'role', this.value)"></td>
+          <td>
+            <button onclick="deleteUser('${user._id}')">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateUser(id, field, value) {
+      await fetch(`${API_URL}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value }),
+      });
+      fetchUsers();
+    }
+
+    async function deleteUser(id) {
+      await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+      fetchUsers();
+    }
+
+    fetchUsers();
+  </script>
+</body>
+</html>
